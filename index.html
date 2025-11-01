@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<title>শুধু ভূমি জরিপের ধরন আলাদা করবে</title>
+<style>
+  body { font-family: sans-serif; background: #f7f7f7; padding: 20px; }
+  textarea { width: 100%; height: 240px; padding: 10px; font-size: 14px; }
+  button { margin-top: 10px; padding: 8px 14px; background: #0078d7; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+  table { margin-top: 20px; border-collapse: collapse; width: 100%; background: #fff; }
+  th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
+  th { background: #f0f0f0; }
+</style>
+</head>
+<body>
+<h2>শুধু ভূমি জরিপের ধরন আলাদা করবে</h2>
+
+<textarea id="inputText">এগুলো কেটে দিয়ে এই বক্সে আপনার টেক্সট পেস্ট করুন এভাবে 
+সময়: 10/27/2025, 10:53:17 AM
+হোল্ডিং নং: ৬৬
+খতিয়ান নং: ৬৬
+মন্তব্য: ভূমি জরিপের ধরন ঠিক করতে হবে
+------------------
+সময়: 10/27/2025, 10:53:17 AM
+হোল্ডিং নং: ৯২
+খতিয়ান নং: ৯২
+মন্তব্য: কর পরিশোধের সাল সংশোধন করতে হবে
+------------------
+সময়: 10/27/2025, 10:53:22 AM
+হোল্ডিং নং: ৯৮
+খতিয়ান নং: ৯৮
+মন্তব্য: ভূমি জরিপের ধরন ঠিক করতে হবে
+------------------
+সময়: 10/27/2025, 10:53:24 AM
+হোল্ডিং নং: ৯৬
+খতিয়ান নং: ৯৬
+মন্তব্য: ভূমি জরিপের ধরন ঠিক করতে হবে
+------------------
+সময়: 10/27/2025, 10:53:26 AM
+হোল্ডিং নং: ৬৬
+খতিয়ান নং: ৬৬
+মন্তব্য: ভূমি জরিপের ধরন ঠিক করতে হবে
+------------------
+সময়: 10/27/2025, 10:53:27 AM
+হোল্ডিং নং: ৯৫
+খতিয়ান নং: ৯৫
+মন্তব্য: ভূমি জরিপের ধরন ঠিক করতে হবে
+------------------
+সময়: 10/27/2025, 10:53:29 AM
+হোল্ডিং নং: ৯৩
+খতিয়ান নং: ৯৩
+মন্তব্য: জমির পরিমাণ সংশোধন করতে হবে
+</textarea>
+
+<br>
+<button id="extractBtn">Extract</button>
+
+<div id="result"></div>
+
+<script>
+document.getElementById("extractBtn").addEventListener("click", function() {
+  const text = document.getElementById("inputText").value.trim();
+  const records = text.split(/[-]{6,}/).map(s => s.trim()).filter(Boolean);
+
+  let resultHTML = "<table><tr><th>হোল্ডিং নং</th><th>খতিয়ান নং</th><th>মন্তব্য</th></tr>";
+  let found = 0;
+
+  for (const rec of records) {
+    const holdingMatch = rec.match(/হোল্ডিং\s*নং[:：]?\s*([০-৯0-9]+)/u);
+    const khatianMatch = rec.match(/খতিয়ান\s*নং[:：]?\s*([০-৯0-9]+)/u);
+    const commentMatch = rec.match(/মন্তব্য[:：]?\s*(.+)/u);
+
+    const holding = holdingMatch ? holdingMatch[1] : "";
+    const khatian = khatianMatch ? khatianMatch[1] : "";
+    const comment = commentMatch ? commentMatch[1] : "";
+    if (comment.includes("ভূমি জরিপ")) {
+      found++;
+      resultHTML += `<tr><td>${holding}</td><td>${khatian}</td><td>${comment}</td></tr>`;
+    }
+  }
+
+  resultHTML += "</table>";
+
+  document.getElementById("result").innerHTML =
+    found ? resultHTML : "<p>কোনো ভূমি জরিপ মন্তব্য পাওয়া যায়নি।</p>";
+});
+</script>
+</body>
+</html>
