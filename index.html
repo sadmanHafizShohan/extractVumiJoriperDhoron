@@ -10,6 +10,8 @@
   table { margin-top: 20px; border-collapse: collapse; width: 100%; background: #fff; }
   th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 14px; }
   th { background: #f0f0f0; }
+  tr:nth-child(even) { background-color: #f2f2f2; }
+  .selected { background-color: #d4edda !important; }
 </style>
 </head>
 <body>
@@ -62,8 +64,15 @@ document.getElementById("extractBtn").addEventListener("click", function() {
   const text = document.getElementById("inputText").value.trim();
   const records = text.split(/[-]{6,}/).map(s => s.trim()).filter(Boolean);
 
-  let resultHTML = "<table><tr><th>হোল্ডিং নং</th><th>খতিয়ান নং</th><th>মন্তব্য</th></tr>";
-  let found = 0;
+  let extractedData = [];
+
+  const bengaliToEnglish = {
+    '০': 0, '১': 1, '২': 2, '৩': 3, '৪': 4, '৫': 5, '৬': 6, '৭': 7, '৮': 8, '৯': 9
+  };
+
+  const convertBengaliToEnglish = (bengaliNumber) => {
+    return parseInt(String(bengaliNumber).replace(/[০-৯]/g, d => bengaliToEnglish[d]));
+  };
 
   for (const rec of records) {
     const holdingMatch = rec.match(/হোল্ডিং\s*নং[:：]?\s*([০-৯0-9]+)/u);
@@ -73,16 +82,46 @@ document.getElementById("extractBtn").addEventListener("click", function() {
     const holding = holdingMatch ? holdingMatch[1] : "";
     const khatian = khatianMatch ? khatianMatch[1] : "";
     const comment = commentMatch ? commentMatch[1] : "";
+
     if (comment.includes("ভূমি জরিপ")) {
-      found++;
-      resultHTML += `<tr><td>${holding}</td><td>${khatian}</td><td>${comment}</td></tr>`;
+      extractedData.push({
+        holding: holding,
+        khatian: khatian,
+        comment: comment,
+        holdingNumeric: convertBengaliToEnglish(holding)
+      });
     }
   }
 
-  resultHTML += "</table>";
+  extractedData.sort((a, b) => a.holdingNumeric - b.holdingNumeric);
+
+  let resultHTML = "";
+  let found = 0;
+  const uniqueRecords = new Set();
+
+  let tableHTML = "<table><tr><th>হোল্ডিং নং</th><th>খতিয়ান নং</th><th>মন্তব্য</th></tr>";
+
+  for (const data of extractedData) {
+    const uniqueIdentifier = `${data.holding}-${data.khatian}`;
+    if (!uniqueRecords.has(uniqueIdentifier)) {
+      uniqueRecords.add(uniqueIdentifier);
+      tableHTML += `<tr><td>${data.holding}</td><td>${data.khatian}</td><td>${data.comment}</td></tr>`;
+      found++;
+    }
+  }
+
+  tableHTML += "</table>";
+  resultHTML = `<h3>মোট ${found} টি ভূমি জরিপের রেকর্ড পাওয়া গেছে।</h3>` + tableHTML;
+
 
   document.getElementById("result").innerHTML =
     found ? resultHTML : "<p>কোনো ভূমি জরিপ মন্তব্য পাওয়া যায়নি।</p>";
+});
+
+document.getElementById("result").addEventListener("click", function(e) {
+  if (e.target && e.target.nodeName === "TD") {
+    e.target.parentNode.classList.toggle("selected");
+  }
 });
 </script>
 </body>
